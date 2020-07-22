@@ -14,7 +14,7 @@ Use your gist as counters. Support multiple counters in a single gist.
 
 ## Counter badge
 
-The most common usage is creating a counter badge using [Shields.io](https://shields.io/#dynamic-badge).
+The most common usage is creating a counter badge (like this one ![](https://img.shields.io/badge/Counter-42-green)) using [Shields.io](https://shields.io/#dynamic-badge).
 
 **tl;dr** `https://img.shields.io/badge/dynamic/json?label=<label>&query=$.<name>&url=<counter URL>`
 
