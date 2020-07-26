@@ -12,26 +12,26 @@ Use your gist as counters. Support multiple counters in a single gist.
 2. [Deploy to Vercel](https://vercel.com/import/project?template=https://github.com/kidonng/gist-counter)
 3. Your counter is now live at `<Deployment Domain>/api` 🚀
 
-## Counter badge
+## Create a badge
 
-The most common usage is creating a counter badge (like this one ![](https://img.shields.io/badge/Counter-42-green)) using [Shields.io](https://shields.io/#dynamic-badge).
+The most common usage of Gist Counter is to create a badge (like this one ![](https://img.shields.io/badge/Counter-42-green)) using [Shields.io](https://shields.io/).
 
 **tl;dr** `https://img.shields.io/badge/dynamic/json?label=<label>&query=$.<name>&url=<counter URL>`
 
-1. Click the URL above to open Dynamic badge creator.
+1. Open [dynamic badge creator](https://shields.io/#dynamic-badge).
 2. Set `data type` to `json`
 3. Enter the text you want to display in `label`
 4. Put counter URL in `data url`
-5. Set `query` to `$.<name>` (you should use `$.count` by default)
-6. Optionally, config color, prefix and suffix.
-7. Click `Make Badge` and voila! Your new counter badge is there 🎉
+5. Set `query` to `$.<name>` (by default it's `$.count`)
+6. Optionally config color, prefix and suffix.
+7. Click `Make Badge` and voila! You've got a counter badge 🎉
 
 ## Multiple counters
 
-The counter is named `count` by default. You can create a new counter by appending a query string `?name=<counter name>` to your badge URL.
+The default counter is named `count`. You can create and use new counters by appending a query string `?name=<counter name>` to your counter URL.
 
 ## Modify the data
 
 The data is just plain JSON, so you can use whatever method to modify it.
 
-Note that if the data is invalid JSON (or empty), it will be reset on next request. This is useful if you want to reset the data: just remove all the content.
+Note that if the data is invalid JSON (or just empty), it will be reset on next request. This is useful if you want to reset the data, just leave your gist blank.
