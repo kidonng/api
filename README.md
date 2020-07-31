@@ -35,3 +35,8 @@ The default counter is named `count`. You can create and use new counters by app
 The data is just plain JSON, so you can use whatever method to modify it.
 
 Note that if the data is invalid JSON (or just empty), it will be reset on next request. This is useful if you want to reset the data, just leave your gist blank.
+
+## See also
+
+- [Hits](https://github.com/dwyl/hits)
+- [visitor-badge](https://github.com/jwenjian/visitor-badge)
