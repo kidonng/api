@@ -4,12 +4,12 @@ Use your gist as counters. Support multiple counters in a single gist.
 
 ## Setup
 
-1. Add the following secrets to your Vercel account (or [create one](https://vercel.com/signup)):
+1. Configure the following environment variables in [`vercel.json`](vercel.json):
 
-   - `gist_counter_gh_token`: GitHub token with `gist` scope. [Click here](https://github.com/settings/tokens/new?description=gist-counter&scopes=gist) to create one.
-   - `gist_counter_gist_id`: Gist ID. [Click here](https://gist.github.com/) to create a gist (with any content).
+   - `GH_TOKEN`: GitHub token with `gist` scope. [Click here](https://github.com/settings/tokens/new?description=gist-counter&scopes=gist) to create one.
+   - `GIST_ID`: Gist ID. [Click here](https://gist.github.com/) to create a gist (with any content).
 
-2. [Deploy to Vercel](https://vercel.com/import/project?template=https://github.com/kidonng/gist-counter)
+2. [Deploy to Vercel](https://vercel.com/import/project?template=https://github.com/kidonng/gist-counter).
 3. Your counter is now live at `<Deployment Domain>/api` 🚀
 
 ## Create a badge

@@ -2,7 +2,7 @@
   "version": 2,
   "env": {
     "GH_TOKEN": "@gist_counter_gh_token",
-    "GIST_ID": "@gist_counter_gist_id"
+    "GIST_ID": "c012e77fdf9afc9412c54ae54b6751b9"
   },
   "github": {
     "enabled": false

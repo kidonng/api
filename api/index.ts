@@ -6,13 +6,9 @@ export default async (
   { json, status, send }: NowResponse
 ) => {
   const { GH_TOKEN, GIST_ID } = process.env
-  if (!GH_TOKEN) {
+  if (!GH_TOKEN || !GIST_ID) {
     status(503)
-    return send('No `GH_TOKEN` provided')
-  }
-  if (!GIST_ID) {
-    status(503)
-    return send('No `GIST_ID` provided')
+    return send('No `GH_TOKEN` or `GIST_ID` provided')
   }
   if (Array.isArray(name)) {
     status(400)
