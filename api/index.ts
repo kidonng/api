@@ -2,18 +2,36 @@ import { Octokit } from '@octokit/rest'
 import { NowRequest, NowResponse } from '@vercel/node'
 
 export default async (
-  { query: { name = 'count' } }: NowRequest,
-  { json, status, send }: NowResponse
+  { query: { name, step = '1', ...params }, headers }: NowRequest,
+  res: NowResponse
 ) => {
+  if (params.label) {
+    const search = new URLSearchParams({
+      ...params,
+      url: `${headers['x-forwarded-proto']}://${headers.host}/api?name=${name}`,
+      query: `$['${name}']`,
+    }).toString()
+
+    res.setHeader(
+      'Location',
+      `https://img.shields.io/badge/dynamic/json?${search}`
+    )
+    return res.status(308).end()
+  }
+
   const { GH_TOKEN, GIST_ID } = process.env
-  if (!GH_TOKEN || !GIST_ID) {
-    status(503)
-    return send('No `GH_TOKEN` or `GIST_ID` provided')
-  }
-  if (Array.isArray(name)) {
-    status(400)
-    return send('Mutiple `name` provided')
-  }
+  if (!GH_TOKEN || !GIST_ID)
+    return res
+      .status(503)
+      .send('Please config `GH_TOKEN` and `GIST_ID` environment variables.')
+
+  if (typeof name !== 'string')
+    return res
+      .status(400)
+      .send('Please provide one and only one `name` parameter.')
+
+  if (typeof step !== 'string')
+    return res.status(400).send('Please provide only one `step` parameter.')
 
   const {
     gists: { get, update },
@@ -23,27 +41,32 @@ export default async (
   } = await get({ gist_id: GIST_ID })
   const [[filename, { content }]] = Object.entries(files)
 
-  let data: Record<string, number>
+  let counters
 
   try {
-    const parsed = JSON.parse(content!)
-    data = {
-      ...parsed,
-      [name]: ++parsed[name] || 1,
-    }
+    counters = JSON.parse(content!)
   } catch {
-    data = { [name]: 1 }
+    return res
+      .status(500)
+      .send('Please make sure the first gist file is valid JSON.')
   }
 
-  await update({
-    gist_id: GIST_ID,
-    files: {
-      [filename]: {
-        filename: 'counter.json',
-        content: JSON.stringify(data),
-      },
-    },
-  })
+  if (typeof counters?.[name] !== 'number')
+    return res.status(500).send('Please define the counter as a number.')
 
-  json({ [name]: data[name] })
+  counters[name] += Number(step)
+
+  if (Number(step) === 0) res.setHeader('Cache-Control', 's-maxage=300')
+  else
+    await update({
+      gist_id: GIST_ID,
+      files: {
+        [filename]: {
+          filename: 'counter.json',
+          content: JSON.stringify(counters),
+        },
+      },
+    })
+
+  res.json({ [name]: counters[name] })
 }

@@ -7,34 +7,41 @@ Use your gist as counters. Support multiple counters in a single gist.
 1. Configure the following environment variables in [`vercel.json`](vercel.json):
 
    - `GH_TOKEN`: GitHub token with `gist` scope. [Click here](https://github.com/settings/tokens/new?description=gist-counter&scopes=gist) to create one.
-   - `GIST_ID`: Gist ID. [Click here](https://gist.github.com/) to create a gist (with any content).
+   - `GIST_ID`: Gist ID. [Click here](https://gist.github.com/) to create a gist:
+
+      ```json
+      {
+        "count": 0
+      }
+      ```
 
 2. [Deploy to Vercel](https://vercel.com/import/project?template=https://github.com/kidonng/gist-counter).
-3. Your counter is now live at `<Deployment Domain>/api` 🚀
+3. 🚀 Your counter is now live at `<Deployment Domain>/api?name=count`. When you visit it, the updated counter will be returned:
 
-## Create a badge
+   ```json
+   {
+      "count": 1
+   }
+   ```
+4. To add, modify and remove counters, just edit the gist.
 
-The most common usage of Gist Counter is to create a badge (like this one ![](https://img.shields.io/badge/dynamic/json?label=Hits&query=$['gist-counter']&url=https://counter.xuann.wang/api?name=gist-counter)) using [Shields.io](https://shields.io/).
+## API
 
-**tl;dr** `https://img.shields.io/badge/dynamic/json?label=<label>&query=$.<name>&url=<counter URL>`
+| Params  | Type     | Required | Description                                                                                                                                                                |
+| ------- | -------- | :------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`  | *string* |    ✔     | Name of the counter                                                                                                                                                        |
+| `step`  | *number* |    ❌     | Step of the counter, can be any number (thus `0` makes it read-only), defaults to `1`                                                                                      |
+| `label` | *string* |    ❌     | Return a badge via [Shields.io](https://shields.io/) if specified. You can use other [dynamic label parameters](https://shields.io/#dynamic-badge) such as `color` as well |
 
-1. Open [dynamic badge creator](https://shields.io/#dynamic-badge).
-2. Set `data type` to `json`
-3. Enter the text you want to display in `label`
-4. Put counter URL in `data url`
-5. Set `query` to `$.<name>` (by default it's `$.count`)
-6. Optionally config color, prefix and suffix.
-7. Click `Make Badge` and voila! You've got a counter badge 🎉
+## Usage
 
-## Multiple counters
+- As a lightweight analytics
+- Track and show your project or profile visits, like this one ![Hits](https://counter.xuann.wang/api?name=gist-counter&label=Hits)
 
-The default counter is named `count`. You can create and use new counters by appending a query string `?name=<counter name>` to your counter URL.
-
-## Modify the data
-
-The data is just plain JSON, so you can use whatever method to modify it.
-
-Note that if the data is invalid JSON (or just empty), it will be reset on next request. This is useful if you want to reset the data, just leave your gist blank.
+   ```md
+   ![Hits](https://counter.xuann.wang/api?name=gist-counter&label=Hits)
+   ```
+- ...unleash your imagination!
 
 ## See also
 
