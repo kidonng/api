@@ -3,10 +3,10 @@ import { gist, ServerRequest } from '../deps.ts'
 export default async (req: ServerRequest) => {
   const { url, headers } = req
   const searchParams = new URLSearchParams(url.substring(url.indexOf('?')))
-  const { name, step = '1', ...params } = Object.fromEntries(
+  const { name, step: _step, ...params } = Object.fromEntries(
     searchParams.entries()
   )
-  const _step = Number(step)
+  const step = Number(_step) || 1
 
   if (!name)
     return req.respond({
@@ -20,7 +20,7 @@ export default async (req: ServerRequest) => {
         'x-forwarded-host'
       )}/api`
     )
-    apiUrl.search = new URLSearchParams({ name, step }).toString()
+    apiUrl.search = new URLSearchParams({ name, step: String(step) }).toString()
 
     const badgeUrl = new URL('https://img.shields.io/badge/dynamic/json')
     badgeUrl.search = new URLSearchParams({
@@ -57,13 +57,13 @@ export default async (req: ServerRequest) => {
         body: 'Please ensure the counter is defined and its type is number.',
       })
 
-    counters[name] += _step
+    counters[name] += step
 
     const responseHeaders = new Headers({
       'access-control-allow-origin': '*',
       'content-type': 'application/json; charset=utf-8',
     })
-    if (_step === 0) responseHeaders.set('cache-control', 's-maxage=300')
+    if (step === 0) responseHeaders.set('cache-control', 's-maxage=300')
     else
       await updateGist({
         id: GIST_ID,
