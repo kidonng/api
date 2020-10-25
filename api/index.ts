@@ -1,4 +1,4 @@
-import { ky, ServerRequest } from '../deps.ts'
+import { gist, ServerRequest } from '../deps.ts'
 
 export default async (req: ServerRequest) => {
   const { url, headers } = req
@@ -6,30 +6,7 @@ export default async (req: ServerRequest) => {
   const { name, step = '1', ...params } = Object.fromEntries(
     searchParams.entries()
   )
-
-  if (params.label) {
-    const search = new URLSearchParams({
-      ...params,
-      url: `${headers.get('x-forwarded-proto')}://${headers.get(
-        'x-forwarded-host'
-      )}/api?name=${name}`,
-      query: `$['${name}']`,
-    }).toString()
-
-    return req.respond({
-      status: 308,
-      headers: new Headers({
-        location: `https://img.shields.io/badge/dynamic/json?${search}`,
-      }),
-    })
-  }
-
-  const { GH_TOKEN, GIST_ID } = Deno.env.toObject()
-  if (!GH_TOKEN || !GIST_ID)
-    return req.respond({
-      status: 503,
-      body: 'Please config `GH_TOKEN` and `GIST_ID` environment variables.',
-    })
+  const _step = Number(step)
 
   if (!name)
     return req.respond({
@@ -37,53 +14,75 @@ export default async (req: ServerRequest) => {
       body: 'Please provide `name` parameter.',
     })
 
-  const api = ky.extend({
-    prefixUrl: 'https://api.github.com',
-    headers: {
-      authorization: `token ${GH_TOKEN}`,
-    },
-  })
-  const { files } = await api.get(`gists/${GIST_ID}`).json()
-  const [[filename, { content }]] = Object.entries(files)
+  if (params.label) {
+    const apiUrl = new URL(
+      `${headers.get('x-forwarded-proto')}://${headers.get(
+        'x-forwarded-host'
+      )}/api`
+    )
+    apiUrl.search = new URLSearchParams({ name, step }).toString()
 
-  let counters
+    const badgeUrl = new URL('https://img.shields.io/badge/dynamic/json')
+    badgeUrl.search = new URLSearchParams({
+      ...params,
+      url: apiUrl.toString(),
+      query: `$['${name}']`,
+    }).toString()
 
-  try {
-    counters = JSON.parse(content)
-  } catch {
     return req.respond({
-      status: 500,
-      body: 'Please make sure the first file of the gist is valid JSON.',
+      status: 308,
+      headers: new Headers({
+        location: badgeUrl.toString(),
+      }),
     })
   }
 
-  if (typeof counters?.[name] !== 'number')
+  const { GH_TOKEN, GIST_ID } = Deno.env.toObject()
+  if (!(GH_TOKEN && GIST_ID))
     return req.respond({
-      status: 500,
-      body: 'Please make sure the counter is defined and its type is number.',
+      status: 503,
+      body: 'Please config `GH_TOKEN` and `GIST_ID` environment variables.',
     })
 
-  counters[name] += Number(step)
+  const { getGist, updateGist } = gist(GH_TOKEN)
+  const { files } = await getGist(GIST_ID)
+  const [{ filename, content }] = Object.values(files)
 
-  const responseHeaders = new Headers({
-    'access-control-allow-origin': '*',
-    'content-type': 'application/json; charset=utf-8',
-  })
-  if (Number(step) === 0) responseHeaders.set('cache-control', 's-maxage=300')
-  else
-    await api.patch(`gists/${GIST_ID}`, {
-      json: {
+  try {
+    const counters = JSON.parse(content)
+
+    if (typeof counters?.[name] !== 'number')
+      return req.respond({
+        status: 500,
+        body: 'Please ensure the counter is defined and its type is number.',
+      })
+
+    counters[name] += _step
+
+    const responseHeaders = new Headers({
+      'access-control-allow-origin': '*',
+      'content-type': 'application/json; charset=utf-8',
+    })
+    if (_step === 0) responseHeaders.set('cache-control', 's-maxage=300')
+    else
+      await updateGist({
+        id: GIST_ID,
         files: {
           [filename]: {
-            filename: 'counter.json',
+            filename,
             content: JSON.stringify(counters),
           },
         },
-      },
-    })
+      })
 
-  req.respond({
-    body: JSON.stringify({ [name]: counters[name] }),
-    headers: responseHeaders,
-  })
+    req.respond({
+      body: JSON.stringify({ [name]: counters[name] }),
+      headers: responseHeaders,
+    })
+  } catch {
+    req.respond({
+      status: 500,
+      body: 'Please ensure the first file of the gist is valid JSON.',
+    })
+  }
 }

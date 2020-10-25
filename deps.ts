@@ -1,5 +1,2 @@
-// @deno-types="./types/ky.d.ts"
-import ky from 'https://cdn.jsdelivr.net/npm/ky@0.24.0/index.js'
-
-export { ky }
+export { ky, gist } from 'https://cdn.jsdelivr.net/gh/kidonng/deno-utils/mod.ts'
 export * from 'https://deno.land/std@0.74.0/http/server.ts'
