@@ -4,6 +4,11 @@
     "GH_TOKEN": "@gist_counter_gh_token",
     "GIST_ID": "a0d675bcbf8924a354f1fc14bc2f2caa"
   },
+  "functions": {
+    "api/**/*.[jt]s": {
+      "runtime": "vercel-deno@0.7.3"
+    }
+  },
   "github": {
     "enabled": false
   }

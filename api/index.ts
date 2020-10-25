@@ -1,72 +1,89 @@
-import { Octokit } from '@octokit/rest'
-import { NowRequest, NowResponse } from '@vercel/node'
+import { ky, ServerRequest } from '../deps.ts'
 
-export default async (
-  { query: { name, step = '1', ...params }, headers }: NowRequest,
-  res: NowResponse
-) => {
+export default async (req: ServerRequest) => {
+  const { url, headers } = req
+  const searchParams = new URLSearchParams(url.substring(url.indexOf('?')))
+  const { name, step = '1', ...params } = Object.fromEntries(
+    searchParams.entries()
+  )
+
   if (params.label) {
     const search = new URLSearchParams({
       ...params,
-      url: `${headers['x-forwarded-proto']}://${headers.host}/api?name=${name}`,
+      url: `${headers.get('x-forwarded-proto')}://${headers.get(
+        'x-forwarded-host'
+      )}/api?name=${name}`,
       query: `$['${name}']`,
     }).toString()
 
-    res.setHeader(
-      'Location',
-      `https://img.shields.io/badge/dynamic/json?${search}`
-    )
-    return res.status(308).end()
+    return req.respond({
+      status: 308,
+      headers: new Headers({
+        location: `https://img.shields.io/badge/dynamic/json?${search}`,
+      }),
+    })
   }
 
-  const { GH_TOKEN, GIST_ID } = process.env
+  const { GH_TOKEN, GIST_ID } = Deno.env.toObject()
   if (!GH_TOKEN || !GIST_ID)
-    return res
-      .status(503)
-      .send('Please config `GH_TOKEN` and `GIST_ID` environment variables.')
+    return req.respond({
+      status: 503,
+      body: 'Please config `GH_TOKEN` and `GIST_ID` environment variables.',
+    })
 
-  if (typeof name !== 'string')
-    return res
-      .status(400)
-      .send('Please provide one and only one `name` parameter.')
+  if (!name)
+    return req.respond({
+      status: 400,
+      body: 'Please provide `name` parameter.',
+    })
 
-  if (typeof step !== 'string')
-    return res.status(400).send('Please provide only one `step` parameter.')
-
-  const {
-    gists: { get, update },
-  } = new Octokit({ auth: GH_TOKEN })
-  const {
-    data: { files },
-  } = await get({ gist_id: GIST_ID })
+  const api = ky.extend({
+    prefixUrl: 'https://api.github.com',
+    headers: {
+      authorization: `token ${GH_TOKEN}`,
+    },
+  })
+  const { files } = await api.get(`gists/${GIST_ID}`).json()
   const [[filename, { content }]] = Object.entries(files)
 
   let counters
 
   try {
-    counters = JSON.parse(content!)
+    counters = JSON.parse(content)
   } catch {
-    return res
-      .status(500)
-      .send('Please make sure the first gist file is valid JSON.')
+    return req.respond({
+      status: 500,
+      body: 'Please make sure the first file of the gist is valid JSON.',
+    })
   }
 
   if (typeof counters?.[name] !== 'number')
-    return res.status(500).send('Please define the counter as a number.')
+    return req.respond({
+      status: 500,
+      body: 'Please make sure the counter is defined and its type is number.',
+    })
 
   counters[name] += Number(step)
 
-  if (Number(step) === 0) res.setHeader('Cache-Control', 's-maxage=300')
+  const responseHeaders = new Headers({
+    'access-control-allow-origin': '*',
+    'content-type': 'application/json; charset=utf-8',
+  })
+  if (Number(step) === 0) responseHeaders.set('cache-control', 's-maxage=300')
   else
-    await update({
-      gist_id: GIST_ID,
-      files: {
-        [filename]: {
-          filename: 'counter.json',
-          content: JSON.stringify(counters),
+    await api.patch(`gists/${GIST_ID}`, {
+      json: {
+        files: {
+          [filename]: {
+            filename: 'counter.json',
+            content: JSON.stringify(counters),
+          },
         },
       },
     })
 
-  res.json({ [name]: counters[name] })
+  req.respond({
+    body: JSON.stringify({ [name]: counters[name] }),
+    headers: responseHeaders,
+  })
 }
