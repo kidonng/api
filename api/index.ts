@@ -1,4 +1,4 @@
-import { gist, ServerRequest } from '../deps.ts'
+import { gist, graphql, ServerRequest } from '../deps.ts'
 
 export default async (req: ServerRequest) => {
   const { url, headers } = req
@@ -44,12 +44,27 @@ export default async (req: ServerRequest) => {
       body: 'Please config `GH_TOKEN` and `GIST_ID` environment variables.',
     })
 
-  const { getGist, updateGist } = gist(GH_TOKEN)
-  const { files } = await getGist(GIST_ID)
-  const [{ filename, content }] = Object.values(files)
+  const { updateGist } = gist(GH_TOKEN)
+  const graphqlApi = graphql(GH_TOKEN)
+  const {
+    viewer: {
+      gist: {
+        files: [{ name: filename, text }],
+      },
+    },
+  } = await graphqlApi(`
+    viewer {
+      gist(name: "${GIST_ID}") {
+        files(limit: 1) {
+          name
+          text
+        }
+      }
+    }
+  `)
 
   try {
-    const counters = JSON.parse(content)
+    const counters = JSON.parse(text)
 
     if (typeof counters?.[name] !== 'number')
       return req.respond({
