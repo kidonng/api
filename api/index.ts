@@ -64,7 +64,12 @@ export default async (req: ServerRequest) => {
       'content-type': 'application/json; charset=utf-8',
     })
     if (step === 0) responseHeaders.set('cache-control', 's-maxage=300')
-    else
+    await req.respond({
+      body: JSON.stringify({ [name]: counters[name] }),
+      headers: responseHeaders,
+    })
+
+    if (step !== 0)
       await updateGist({
         id: GIST_ID,
         files: {
@@ -74,11 +79,6 @@ export default async (req: ServerRequest) => {
           },
         },
       })
-
-    req.respond({
-      body: JSON.stringify({ [name]: counters[name] }),
-      headers: responseHeaders,
-    })
   } catch {
     req.respond({
       status: 500,
