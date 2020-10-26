@@ -1,25 +1,19 @@
-import { gist, graphql, ServerRequest } from '../deps.ts'
+import { GistAPI, GraphQL, ExtendedRequest, ServerRequest } from '../deps.ts'
 
 export default async (req: ServerRequest) => {
-  const { url, headers } = req
-  const searchParams = new URLSearchParams(url.substring(url.indexOf('?')))
-  const { name, step: _step, ...params } = Object.fromEntries(
-    searchParams.entries()
-  )
+  const { headers, search, respond, redirect } = new ExtendedRequest(req)
+  const { 'x-forwarded-proto': proto, 'x-forwarded-host': host } = headers
+  const { name, step: _step, ...params } = search
   const step = Number(_step) || 1
 
   if (!name)
-    return req.respond({
+    return respond({
       status: 400,
       body: 'Please provide `name` parameter.',
     })
 
   if (params.label) {
-    const apiUrl = new URL(
-      `${headers.get('x-forwarded-proto')}://${headers.get(
-        'x-forwarded-host'
-      )}/api`
-    )
+    const apiUrl = new URL(`${proto}://${host}/api`)
     apiUrl.search = new URLSearchParams({ name, step: String(step) }).toString()
 
     const badgeUrl = new URL('https://img.shields.io/badge/dynamic/json')
@@ -29,30 +23,25 @@ export default async (req: ServerRequest) => {
       query: `$['${name}']`,
     }).toString()
 
-    return req.respond({
-      status: 308,
-      headers: new Headers({
-        location: badgeUrl.toString(),
-      }),
-    })
+    return redirect(badgeUrl.toString())
   }
 
   const { GH_TOKEN, GIST_ID } = Deno.env.toObject()
   if (!(GH_TOKEN && GIST_ID))
-    return req.respond({
+    return respond({
       status: 503,
       body: 'Please config `GH_TOKEN` and `GIST_ID` environment variables.',
     })
 
-  const { updateGist } = gist(GH_TOKEN)
-  const graphqlApi = graphql(GH_TOKEN)
+  const { update } = new GistAPI(GH_TOKEN)
+  const { graphql } = new GraphQL(GH_TOKEN)
   const {
     viewer: {
       gist: {
         files: [{ name: filename, text }],
       },
     },
-  } = await graphqlApi(`
+  } = await graphql(`
     viewer {
       gist(name: "${GIST_ID}") {
         files(limit: 1) {
@@ -67,7 +56,7 @@ export default async (req: ServerRequest) => {
     const counters = JSON.parse(text)
 
     if (typeof counters?.[name] !== 'number')
-      return req.respond({
+      return respond({
         status: 500,
         body: 'Please ensure the counter is defined and its type is number.',
       })
@@ -76,16 +65,15 @@ export default async (req: ServerRequest) => {
 
     const responseHeaders = new Headers({
       'access-control-allow-origin': '*',
-      'content-type': 'application/json; charset=utf-8',
     })
     if (step === 0) responseHeaders.set('cache-control', 's-maxage=300')
-    await req.respond({
-      body: JSON.stringify({ [name]: counters[name] }),
+    await respond({
+      json: { [name]: counters[name] },
       headers: responseHeaders,
     })
 
     if (step !== 0)
-      await updateGist({
+      await update({
         id: GIST_ID,
         files: {
           [filename]: {
@@ -95,7 +83,7 @@ export default async (req: ServerRequest) => {
         },
       })
   } catch {
-    req.respond({
+    respond({
       status: 500,
       body: 'Please ensure the first file of the gist is valid JSON.',
     })
