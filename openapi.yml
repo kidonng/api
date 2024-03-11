@@ -1,0 +1,54 @@
+openapi: 3.0.0
+info:
+  title: API
+  version: '1'
+servers:
+  - url: https://api.xuann.wang
+paths:
+  /api/github-file-contributors:
+    get:
+      parameters:
+        - name: user
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tree
+          in: query
+          schema:
+            type: string
+          description: Branch/commit (empty means HEAD)
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        default:
+          description: ''
+  /github-file-tree:
+    get:
+      parameters:
+        - name: user
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tree
+          in: query
+          schema:
+            type: string
+          description: Branch/commit (empty means HEAD)
+      responses:
+        default:
+          description: ''
