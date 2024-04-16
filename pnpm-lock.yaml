@@ -6,16 +6,16 @@ settings:
 
 dependencies:
   '@whatwg-node/server':
-    specifier: ^0.9.26
-    version: 0.9.26
+    specifier: ^0.9.33
+    version: 0.9.33
   itty-router:
-    specifier: ^4.0.27
-    version: 4.0.27
+    specifier: ^5.0.15
+    version: 5.0.15
 
 devDependencies:
   '@types/node':
-    specifier: ^20.11.24
-    version: 20.11.24
+    specifier: ^20.12.7
+    version: 20.12.7
 
 packages:
 
@@ -23,8 +23,8 @@ packages:
     resolution: {integrity: sha512-gbkePEBupNydxCelHCESvFSFM8XPh1Zs/OAVRW/rKpEqPAl5PbOM90Si8mv9bvnR53uPD2s/FiRxdvSejpRJew==}
     dev: false
 
-  /@types/node@20.11.24:
-    resolution: {integrity: sha512-Kza43ewS3xoLgCEpQrsT+xRo/EJej1y0kVYGiLFE1NEODXGzTfwiC6tXTLMQskn1X4/Rjlh0MQUvx9W+L9long==}
+  /@types/node@20.12.7:
+    resolution: {integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==}
     dependencies:
       undici-types: 5.26.5
     dev: true
@@ -38,12 +38,12 @@ packages:
     resolution: {integrity: sha512-TDYP3CpCrxwxpiNY0UMNf096H5Ihf67BK1iKGegQl5u9SlpEDYrvnV71gWBGJm+Xm31qOy8ATgma9rm8Pe7/5Q==}
     engines: {node: '>=16.0.0'}
     dependencies:
-      '@whatwg-node/node-fetch': 0.5.7
+      '@whatwg-node/node-fetch': 0.5.10
       urlpattern-polyfill: 10.0.0
     dev: false
 
-  /@whatwg-node/node-fetch@0.5.7:
-    resolution: {integrity: sha512-YZA+N3JcW1eh2QRi7o/ij+M07M0dqID73ltgsOEMRyEc2UYVDbyomaih+CWCEZqBIDHw4KMDveXvv4SBZ4TLIw==}
+  /@whatwg-node/node-fetch@0.5.10:
+    resolution: {integrity: sha512-KIAHepie/T1PRkUfze4t+bPlyvpxlWiXTPtcGlbIZ0vWkBJMdRmCg4ZrJ2y4XaO1eTPo1HlWYUuj1WvoIpumqg==}
     engines: {node: '>=16.0.0'}
     dependencies:
       '@kamilkisiela/fast-url-parser': 1.1.4
@@ -53,8 +53,8 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@whatwg-node/server@0.9.26:
-    resolution: {integrity: sha512-QqNktlXBqhpZtHf1rq8h2St/flbSegrGTAhhlYo8aOQagM7MrKy+GhAS9h2FAM7JVnxAIIV4NHSJHPcYf7TqzQ==}
+  /@whatwg-node/server@0.9.33:
+    resolution: {integrity: sha512-bHWZi6YhVsDKAzjlPn5EN7u5j7SvHqDI6Acr37hgMBjKyCzqHivfPFgC/sRZ6LLxM9pJNsXpFoAF1kySXhAn6w==}
     engines: {node: '>=16.0.0'}
     dependencies:
       '@whatwg-node/fetch': 0.9.17
@@ -78,8 +78,8 @@ packages:
       fast-decode-uri-component: 1.0.1
     dev: false
 
-  /itty-router@4.0.27:
-    resolution: {integrity: sha512-Q3/GOE2EJvyu3hhxGN3WDWh3QNg4v7h1KFx/jSLcIOOkpSI1jUFTgGefEESXon4j5YwqCIf0DEemjiVAFSBiUw==}
+  /itty-router@5.0.15:
+    resolution: {integrity: sha512-TGpdnAYdzfUWROKBGDXi2d44taRv1j2B1QG0Yt3NeUhwp8QkfdskF2VfZnFHgUMvYx0YpN99ymACq2mVJbLOIg==}
     dev: false
 
   /streamsearch@1.1.0:

@@ -9,4 +9,4 @@ const router = Router()
 router.get('/api/github-file-contributors', githubFileContributors)
 router.get('/github-file-tree', githubFileTree)
 
-export default createServerAdapter(router.handle)
+export default createServerAdapter(router.fetch)
